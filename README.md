@@ -1,36 +1,96 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Stripe Payment Integration Tutorial
+
+A Next.js application demonstrating how to integrate Stripe Checkout with multiple pricing tiers. Built as a hands-on tutorial for learning Stripe's payment flow end-to-end.
+
+## Features
+
+- 💳 **Multiple Pricing Plans** — Starter ($9), Pro ($29), and Enterprise ($99) cards
+- 🔒 **Stripe Checkout** — Secure, hosted payment page powered by Stripe
+- ✅ **Success Page** — Post-payment confirmation page after checkout
+- ⚡ **Next.js App Router** — Uses Server-side API Routes for secure Stripe interactions
+- 🎨 **Modern UI** — Dark theme with Tailwind CSS v4
+
+## How It Works
+
+```
+User clicks "Get Plan"
+        ↓
+POST /api/checkout  (sends plan name + price)
+        ↓
+Stripe creates a Checkout Session (server-side)
+        ↓
+App redirects user to Stripe's hosted Checkout page
+        ↓
+User completes payment on Stripe
+        ↓
+Stripe redirects back to /success
+```
+
+## Tech Stack
+
+- **Framework**: [Next.js 16](https://nextjs.org/) (App Router)
+- **Payments**: [Stripe](https://stripe.com/) — `stripe` (server SDK) + `@stripe/stripe-js` (client SDK)
+- **Styling**: [Tailwind CSS v4](https://tailwindcss.com/)
+- **Language**: TypeScript
 
 ## Getting Started
 
-First, run the development server:
+### 1. Clone the Repository
+
+```bash
+git clone https://github.com/HHlaingSwan/stripe-payment.git
+cd stripe-payment
+npm install
+```
+
+### 2. Set Up Stripe API Keys
+
+Create a `.env.local` file in the root of the project:
+
+```env
+STRIPE_SECRET_KEY=sk_test_...
+NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY=pk_test_...
+```
+
+> Get your API keys from the [Stripe Dashboard](https://dashboard.stripe.com/apikeys). Use **test mode** keys for development.
+
+### 3. Run the Development Server
 
 ```bash
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Open [http://localhost:3000](http://localhost:3000) in your browser.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## Project Structure
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+```
+├── app/
+│   ├── page.tsx              # Pricing page with 3 plan cards
+│   ├── success/
+│   │   └── page.tsx          # Payment success confirmation page
+│   └── api/
+│       └── checkout/
+│           └── route.ts      # API route — creates Stripe Checkout Session
+├── .env.local                # Stripe API keys (not committed to git)
+└── ...
+```
 
-## Learn More
+## Testing Payments
 
-To learn more about Next.js, take a look at the following resources:
+Use Stripe's test card numbers to simulate payments without real money:
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+| Card Number           | Scenario           |
+| --------------------- | ------------------ |
+| `4242 4242 4242 4242` | Payment succeeds   |
+| `4000 0000 0000 9995` | Payment declined   |
+| `4000 0025 0000 3155` | Requires 3D Secure |
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+Use any future expiry date, any 3-digit CVC, and any zip code.
 
-## Deploy on Vercel
+## Key Concepts Covered
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+- **Server-side session creation** — Stripe sessions are created in an API route to keep your secret key safe
+- **Session URL redirect** — Modern Stripe redirect approach using `session.url` instead of the deprecated `redirectToCheckout`
+- **Dynamic pricing** — A single API route handles multiple price points by accepting `name` and `amount` in the request body
+- **Success & cancel URLs** — Stripe redirects back to your app after payment completes or is cancelled
